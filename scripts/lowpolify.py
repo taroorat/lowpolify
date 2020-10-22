@@ -314,7 +314,7 @@ def main(*args):
         # Call helper function
         helper(inImage=input_image, c=fraction,
                outImage=output_image, show=False)
-        getVertexPoints(outImage=output_image)
+        # getVertexPoints(outImage=output_image)
 
 def getVertexPoints(outImage='test.png'):
     img = cv2.imread(outImage)
@@ -332,6 +332,6 @@ def getVertexPoints(outImage='test.png'):
 
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
-    # main('intest.jpg', 'test.png')
+    main('intest.jpg', 'test.png')
 
-    getVertexPoints(outImage='test.png')
+    # getVertexPoints(outImage='test.png')
