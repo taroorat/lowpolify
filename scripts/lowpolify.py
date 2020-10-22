@@ -24,7 +24,7 @@ def chunk(l, n):
 def builder(part, tridex, lowpoly_image, highpoly_image):
     '''Generates a portion of the final image'''
     for tri in part:
-        # print(tridex == tri)
+        # print(tri,tridex)
         # print(np.mean(highpoly_image[tridex == tri, :], axis=0))
         lowpoly_image[tridex == tri, :] = np.mean(
             highpoly_image[tridex == tri, :], axis=0)
@@ -104,8 +104,8 @@ def get_lowpoly(tris, highpoly_image):
     # unint8 represents Unsigned integer (0 to 255)
 
     lowpoly_image = lowpoly_image.astype(np.uint8)
-    print(np.array(lowpoly_image))
-    print(np.unique(np.array(lowpoly_image)))
+    # print(np.array(lowpoly_image))
+    # print(np.unique(np.array(lowpoly_image)))
     # return low-poly image
     return lowpoly_image
 
@@ -207,13 +207,14 @@ def get_triangulation(im, gray_image, a=50, b=55, c=0.15, show=False, randomize=
     tris.close()
     # exit(0)
     # Return triangulation
+    # print(tris)
     return tris
 
 def pre_process(highpoly_image, newSize=None):
     '''Preprocessing helper'''
     # print('Preprocessing')
     # Handle grayscale images
-    print(highpoly_image.shape[2])
+    # print(highpoly_image.shape[2])
     if highpoly_image.shape[2] == 1:
         # 'dstack' concatenates images along the third dimension
         # Similar to np.concatenate(tup, axis=2)
@@ -288,6 +289,7 @@ def helper(inImage, c=0.3, outImage=None, show=False):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
     if outImage is not None:
+        # print(type(lowpoly_image))
         cv2.imwrite(outImage, lowpoly_image)
         # print('Done')
 
@@ -308,11 +310,28 @@ def main(*args):
         if len(args) == 3:
             output_image = args[1]
             fraction = float(args[2])
-        print("Processing started")
+        # print("Processing started")
         # Call helper function
         helper(inImage=input_image, c=fraction,
                outImage=output_image, show=False)
+        getVertexPoints(outImage=output_image)
+
+def getVertexPoints(outImage='test.png'):
+    img = cv2.imread(outImage)
+    print(len(img)*len(img[0]))
+    img = np.reshape(img, (-1, 3))
+    print(len(img))
+    imgList = img.tolist()
+    lst2 = list(set([tuple(t) for t in imgList]))
+    #
+    print(len(lst2))
+    for i in lst2:
+        print(i)
+    # print(type(imgList))
+
 
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
-    main('intest.jpg','test.png')
+    # main('intest.jpg', 'test.png')
+
+    getVertexPoints(outImage='test.png')
