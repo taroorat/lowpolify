@@ -24,8 +24,11 @@ def chunk(l, n):
 def builder(part, tridex, lowpoly_image, highpoly_image):
     '''Generates a portion of the final image'''
     for tri in part:
+        # print(tridex == tri)
+        # print(np.mean(highpoly_image[tridex == tri, :], axis=0))
         lowpoly_image[tridex == tri, :] = np.mean(
             highpoly_image[tridex == tri, :], axis=0)
+
 
 def PolyArea(x,y):
     '''Returns area of triangle'''
@@ -95,17 +98,14 @@ def get_lowpoly(tris, highpoly_image):
     # tridex = tri
     lowpoly_image = sharedmem.empty(highpoly_image.shape)
     lowpoly_image.fill(0)
-    # Start 4 different processes to simultaneouly process different simplices
-    processes = [Process(target=builder, args=(
-        chunks[i], tridex, lowpoly_image, highpoly_image)) for i in range(4)]
-    # Start each process
-    for p in processes:
-        p.start()
-    # Wait for all process to finish
-    for p in processes:
-        p.join()
+
+    for i in range(4):
+        builder(chunks[i], tridex, lowpoly_image, highpoly_image)
     # unint8 represents Unsigned integer (0 to 255)
+
     lowpoly_image = lowpoly_image.astype(np.uint8)
+    print(np.array(lowpoly_image))
+    print(np.unique(np.array(lowpoly_image)))
     # return low-poly image
     return lowpoly_image
 
@@ -211,8 +211,9 @@ def get_triangulation(im, gray_image, a=50, b=55, c=0.15, show=False, randomize=
 
 def pre_process(highpoly_image, newSize=None):
     '''Preprocessing helper'''
-    print('Preprocessing')
+    # print('Preprocessing')
     # Handle grayscale images
+    print(highpoly_image.shape[2])
     if highpoly_image.shape[2] == 1:
         # 'dstack' concatenates images along the third dimension
         # Similar to np.concatenate(tup, axis=2)
@@ -230,7 +231,7 @@ def pre_process(highpoly_image, newSize=None):
     # Reference: http://www.ipol.im/pub/art/2011/bcm_nlm/
     noiseless_highpoly_image = cv2.fastNlMeansDenoisingColored(
         highpoly_image, None, 10, 10, 7, 21)
-    print('Preprocessing complete')
+    # print('Preprocessing complete')
     return highpoly_image, noiseless_highpoly_image
 
 def helper(inImage, c=0.3, outImage=None, show=False):
@@ -239,7 +240,7 @@ def helper(inImage, c=0.3, outImage=None, show=False):
     highpoly_image = cv2.imread(inImage)
     # Call 'pre_process' function
     highpoly_image, noiseless_highpoly_image = pre_process(highpoly_image, newSize=750)
-    print('Begin thresholding')
+    # print('Begin thresholding')
     # Use Otsu's method for calculating thresholds
     gray_image = cv2.cvtColor(noiseless_highpoly_image, cv2.COLOR_BGR2GRAY)
     ycbcr_image = cv2.cvtColor(noiseless_highpoly_image, cv2.COLOR_RGB2YCrCb)
@@ -269,13 +270,14 @@ def helper(inImage, c=0.3, outImage=None, show=False):
         cv2.imshow('Sharp gray image', sharp_gray_image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-    print('Triangulating')
+    # print('Triangulating')
     # Call 'get_triangulation' function
     tris = get_triangulation(highpoly_image, sharp_gray_image, low_thresh, high_thresh, c, show)
-    print('Triangulation complete. Begin rendering...')
+    # print('Triangulation complete. Begin rendering...')
     # Call 'get_lowpoly' function
     lowpoly_image = get_lowpoly(tris, highpoly_image)
-    print('Rendering complete')
+    # print(lowpoly_image)
+    # print('Rendering complete')
     if np.max(highpoly_image.shape[:2]) < 750:
         scale = 750 / float(np.max(highpoly_image.shape[:2]))
         lowpoly_image = cv2.resize(lowpoly_image, None, fx=scale,
@@ -287,11 +289,12 @@ def helper(inImage, c=0.3, outImage=None, show=False):
         cv2.destroyAllWindows()
     if outImage is not None:
         cv2.imwrite(outImage, lowpoly_image)
-        print('Done')
+        # print('Done')
 
-def main(args):
+def main(*args):
     '''Main function'''
     # No input image
+    # print(len(args))
     if len(args) < 1:
         print('Invalid')
     # Input image specified
@@ -312,4 +315,4 @@ def main(args):
 
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
-    main(sys.argv[1:])
+    main('intest.jpg','test.png')

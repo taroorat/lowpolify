@@ -2,6 +2,7 @@
 # https://github.com/damnever/pigar
 
 # scripts/lowpolify.py: 11
+cmake==3.18.2.post1
 dlib == 19.13.1
 
 # scripts/lowpolify.py: 8
